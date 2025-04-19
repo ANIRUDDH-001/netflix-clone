@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@tensorflow/tfjs"></script>
     <script src="https://unpkg.com/@tensorflow-models/handpose"></script>
+    <script src="https://unpkg.com/@tensorflow-models/posenet"></script>
+    <script src="https://unpkg.com/@tensorflow-models/coco-ssd"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700&display=swap');
         
@@ -37,8 +39,9 @@
         }
 
         .movie-card {
-            transition: transform 0.3s ease;
             position: relative;
+            transition: transform 0.3s ease;
+            cursor: pointer;
         }
 
         .movie-card:hover {
@@ -59,6 +62,164 @@
             padding: 1rem;
             opacity: 0;
             transition: opacity 0.3s ease;
+        }
+
+        .movie-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .movie-action-btn {
+            background: rgba(42, 42, 42, 0.6);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .movie-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            margin-top: 0.5rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #E50914;
+            transition: width 0.3s ease;
+        }
+
+        .continue-watching {
+            position: relative;
+        }
+
+        .continue-watching::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%);
+            pointer-events: none;
+        }
+
+        .continue-watching-info {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+        }
+
+        .continue-watching-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .continue-watching-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .continue-watching-time {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .genre-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+        }
+
+        .match-badge {
+            background: #46d369;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .maturity-rating {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .season-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .season-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .season-btn.active {
+            background: #E50914;
+        }
+
+        .episode-list {
+            margin-top: 1rem;
+        }
+
+        .episode-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .episode-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .episode-number {
+            font-weight: bold;
+            color: #E50914;
+        }
+
+        .episode-info {
+            flex: 1;
+        }
+
+        .episode-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .episode-description {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .episode-duration {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         #ar-overlay {
@@ -122,6 +283,55 @@
             font-weight: bold;
             margin-bottom: 1rem;
         }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #E50914;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .profile-selector {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-selector:hover .profile-dropdown {
+            display: block;
+        }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+
+        .profile-option {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .profile-option:hover {
+            background: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
@@ -131,15 +341,23 @@
             <div class="flex items-center space-x-8">
                 <span class="netflix-red text-4xl font-bold">NETFLIX</span>
                 <div class="hidden md:flex space-x-4">
-                    <a href="#" class="hover:text-gray-300">Home</a>
-                    <a href="#" class="hover:text-gray-300">TV Shows</a>
-                    <a href="#" class="hover:text-gray-300">Movies</a>
-                    <a href="#" class="hover:text-gray-300">New & Popular</a>
-                    <a href="#" class="hover:text-gray-300">My List</a>
+                    <a href="#" class="nav-link hover:text-gray-300">Home</a>
+                    <a href="#" class="nav-link hover:text-gray-300">TV Shows</a>
+                    <a href="#" class="nav-link hover:text-gray-300">Movies</a>
+                    <a href="#" class="nav-link hover:text-gray-300">New & Popular</a>
+                    <a href="#" class="nav-link hover:text-gray-300">My List</a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <button class="px-4 py-2 bg-netflix-red rounded">Sign In</button>
+                <div class="profile-selector">
+                    <img src="https://placekitten.com/40/40" alt="Profile" class="rounded-full w-8 h-8">
+                    <div class="profile-dropdown">
+                        <div class="profile-option">Manage Profiles</div>
+                        <div class="profile-option">Account</div>
+                        <div class="profile-option">Help Center</div>
+                        <div class="profile-option">Sign out of Netflix</div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -153,8 +371,8 @@
             <h1 class="text-5xl md:text-7xl font-bold mb-4">Stranger Things</h1>
             <p class="text-xl md:text-2xl mb-8 max-w-2xl">When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.</p>
             <div class="flex space-x-4">
-                <button class="px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-opacity-80">Play</button>
-                <button class="px-8 py-3 bg-netflix-light-gray rounded-lg font-bold hover:bg-opacity-80">More Info</button>
+                <button class="px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-opacity-80" onclick="playMovie()">Play</button>
+                <button class="px-8 py-3 bg-netflix-light-gray rounded-lg font-bold hover:bg-opacity-80" onclick="showMoreInfo()">More Info</button>
             </div>
         </div>
     </section>
@@ -163,24 +381,69 @@
     <main class="pt-16">
         <!-- Category Tabs -->
         <div class="category-tabs px-4">
-            <div class="category-tab active">All</div>
-            <div class="category-tab">TV Shows</div>
-            <div class="category-tab">Movies</div>
-            <div class="category-tab">New Releases</div>
-            <div class="category-tab">Trending</div>
+            <div class="category-tab active" onclick="filterContent('all')">All</div>
+            <div class="category-tab" onclick="filterContent('tv')">TV Shows</div>
+            <div class="category-tab" onclick="filterContent('movies')">Movies</div>
+            <div class="category-tab" onclick="filterContent('new')">New Releases</div>
+            <div class="category-tab" onclick="filterContent('trending')">Trending</div>
         </div>
 
         <!-- Movie Rows -->
         <div class="px-4">
+            <!-- Continue Watching -->
+            <div class="movie-row">
+                <h2 class="movie-row-title">Continue Watching</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="movie-card continue-watching" onclick="showMovieDetails('stranger-things')">
+                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
+                        <div class="continue-watching-info">
+                            <div class="continue-watching-title">Stranger Things</div>
+                            <div class="continue-watching-progress">
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 65%"></div>
+                                </div>
+                                <div class="continue-watching-time">33m left</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add more continue watching cards -->
+                </div>
+            </div>
+
             <!-- Popular on Netflix -->
             <div class="movie-row">
                 <h2 class="movie-row-title">Popular on Netflix</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div class="movie-card">
+                    <div class="movie-card" onclick="showMovieDetails('stranger-things')">
                         <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
                         <div class="movie-info">
-                            <h3 class="font-bold">Stranger Things</h3>
-                            <p class="text-sm">TV Show • 2016</p>
+                            <div class="flex items-center space-x-2">
+                                <span class="match-badge">97% Match</span>
+                                <span class="maturity-rating">TV-14</span>
+                            </div>
+                            <div class="flex flex-wrap mt-2">
+                                <span class="genre-tag">Sci-Fi</span>
+                                <span class="genre-tag">Horror</span>
+                                <span class="genre-tag">Drama</span>
+                            </div>
+                            <div class="movie-actions">
+                                <button class="movie-action-btn" onclick="playMovie(event, 'stranger-things')">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                                    </svg>
+                                </button>
+                                <button class="movie-action-btn" onclick="addToMyList(event, 'stranger-things')">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <button class="movie-action-btn" onclick="showMoreInfo(event, 'stranger-things')">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="movie-card">
@@ -269,6 +532,14 @@
                     </div>
                 </div>
             </div>
+
+            <!-- My List -->
+            <div class="movie-row">
+                <h2 class="movie-row-title">My List</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- Add my list cards -->
+                </div>
+            </div>
         </div>
     </main>
 
@@ -290,43 +561,97 @@
         // Mock data for movies
         const movies = [
             {
+                id: 'stranger-things',
                 title: "Stranger Things",
                 description: "When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.",
                 image: "https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png",
                 year: "2016",
                 type: "TV Show",
                 rating: "TV-14",
-                genres: ["Sci-Fi", "Horror", "Drama"]
+                genres: ["Sci-Fi", "Horror", "Drama"],
+                match: "97%",
+                duration: "51m",
+                seasons: 4,
+                cast: ["Millie Bobby Brown", "Finn Wolfhard", "Winona Ryder"],
+                director: "The Duffer Brothers",
+                maturityRating: "TV-14",
+                audioLanguages: ["English", "Spanish", "French"],
+                subtitles: ["English", "Spanish", "French", "German"],
+                similarTitles: ["Dark", "The OA", "Locke & Key"]
             },
             {
+                id: 'squid-game',
                 title: "Squid Game",
                 description: "Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside, a tempting prize awaits — with deadly high stakes.",
                 image: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
                 year: "2021",
                 type: "TV Show",
                 rating: "TV-MA",
-                genres: ["Thriller", "Drama"]
+                genres: ["Thriller", "Drama"],
+                match: "95%",
+                duration: "60m",
+                seasons: 1,
+                cast: ["Lee Jung-jae", "Park Hae-soo", "Wi Ha-jun"],
+                director: "Hwang Dong-hyuk",
+                maturityRating: "TV-MA",
+                audioLanguages: ["Korean", "English"],
+                subtitles: ["English", "Korean", "Spanish"],
+                similarTitles: ["Alice in Borderland", "The Hunger Games", "Battle Royale"]
             },
             {
+                id: 'the-witcher',
                 title: "The Witcher",
                 description: "Geralt of Rivia, a mutated monster-hunter for hire, journeys toward his destiny in a turbulent world where people often prove more wicked than beasts.",
                 image: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
                 year: "2019",
                 type: "TV Show",
                 rating: "TV-MA",
-                genres: ["Fantasy", "Action", "Adventure"]
+                genres: ["Fantasy", "Action", "Adventure"],
+                match: "93%",
+                duration: "60m",
+                seasons: 2,
+                cast: ["Henry Cavill", "Anya Chalotra", "Freya Allan"],
+                director: "Lauren Schmidt Hissrich",
+                maturityRating: "TV-MA",
+                audioLanguages: ["English", "Polish"],
+                subtitles: ["English", "Polish", "Spanish"],
+                similarTitles: ["Game of Thrones", "The Wheel of Time", "Shadow and Bone"]
             }
         ];
 
         // AR X-Ray Feature
         let handposeModel;
+        let posenetModel;
+        let cocoModel;
         let isARActive = false;
         let detectionInterval;
+        let currentGesture = null;
+        let gestureStartTime = null;
+        let lastGestureTime = null;
+
+        const GESTURE_TYPES = {
+            PINCH: 'pinch',
+            SWIPE_LEFT: 'swipe_left',
+            SWIPE_RIGHT: 'swipe_right',
+            WAVE: 'wave',
+            POINT: 'point'
+        };
+
+        const GESTURE_THRESHOLDS = {
+            PINCH_DISTANCE: 20,
+            SWIPE_DISTANCE: 50,
+            WAVE_COUNT: 3,
+            WAVE_INTERVAL: 500
+        };
 
         async function setupCamera() {
             const video = document.getElementById('webcam');
             const stream = await navigator.mediaDevices.getUserMedia({
-                'video': true
+                'video': {
+                    width: 640,
+                    height: 480,
+                    facingMode: 'user'
+                }
             });
             video.srcObject = stream;
             return new Promise((resolve) => {
@@ -336,39 +661,157 @@
             });
         }
 
-        async function loadHandpose() {
-            handposeModel = await handpose.load();
+        async function loadModels() {
+            try {
+                handposeModel = await handpose.load();
+                posenetModel = await posenet.load({
+                    architecture: 'MobileNetV1',
+                    outputStride: 16,
+                    inputResolution: { width: 640, height: 480 },
+                    multiplier: 0.75
+                });
+                cocoModel = await cocoSsd.load();
+                console.log('All models loaded successfully');
+            } catch (error) {
+                console.error('Error loading models:', error);
+            }
         }
 
-        async function detectHands() {
-            const video = document.getElementById('webcam');
-            const predictions = await handposeModel.estimateHands(video);
-            
-            if (predictions.length > 0) {
-                const hand = predictions[0];
-                const indexFinger = hand.annotations.indexFinger[3];
-                const middleFinger = hand.annotations.middleFinger[3];
-                
-                // Calculate distance between index and middle fingers
-                const distance = Math.sqrt(
-                    Math.pow(indexFinger[0] - middleFinger[0], 2) +
-                    Math.pow(indexFinger[1] - middleFinger[1], 2)
-                );
+        function detectPinchGesture(hand) {
+            const indexFinger = hand.annotations.indexFinger[3];
+            const thumb = hand.annotations.thumb[3];
+            const distance = Math.sqrt(
+                Math.pow(indexFinger[0] - thumb[0], 2) +
+                Math.pow(indexFinger[1] - thumb[1], 2)
+            );
+            return distance < GESTURE_THRESHOLDS.PINCH_DISTANCE;
+        }
 
-                // If fingers are close together (pinching gesture)
-                if (distance < 20) {
-                    const movie = movies[Math.floor(Math.random() * movies.length)];
-                    document.getElementById('ar-info').innerHTML = `
-                        <h3 class="text-xl font-bold mb-2">${movie.title}</h3>
-                        <p class="text-sm mb-1">${movie.type} • ${movie.year} • ${movie.rating}</p>
-                        <p class="text-sm mb-2">${movie.genres.join(' • ')}</p>
-                        <p>${movie.description}</p>
-                        <div class="mt-4">
-                            <button id="close-ar" class="px-4 py-2 bg-netflix-red rounded">Close</button>
-                        </div>
-                    `;
+        function detectSwipeGesture(hand) {
+            const wrist = hand.annotations.wrist[0];
+            const indexFinger = hand.annotations.indexFinger[3];
+            const horizontalDistance = Math.abs(wrist[0] - indexFinger[0]);
+            return horizontalDistance > GESTURE_THRESHOLDS.SWIPE_DISTANCE;
+        }
+
+        function detectWaveGesture(hand) {
+            const now = Date.now();
+            if (!gestureStartTime) {
+                gestureStartTime = now;
+                return false;
+            }
+            if (now - gestureStartTime > GESTURE_THRESHOLDS.WAVE_INTERVAL) {
+                gestureStartTime = null;
+                return false;
+            }
+            return true;
+        }
+
+        async function detectGestures() {
+            const video = document.getElementById('webcam');
+            const handPredictions = await handposeModel.estimateHands(video);
+            const posePredictions = await posenetModel.estimateSinglePose(video);
+            
+            if (handPredictions.length > 0) {
+                const hand = handPredictions[0];
+                const now = Date.now();
+
+                // Detect pinch gesture
+                if (detectPinchGesture(hand)) {
+                    if (currentGesture !== GESTURE_TYPES.PINCH) {
+                        currentGesture = GESTURE_TYPES.PINCH;
+                        showMovieDetailsAR();
+                    }
+                }
+                // Detect swipe gesture
+                else if (detectSwipeGesture(hand)) {
+                    const direction = hand.annotations.wrist[0][0] < hand.annotations.indexFinger[3][0] ? 
+                        GESTURE_TYPES.SWIPE_RIGHT : GESTURE_TYPES.SWIPE_LEFT;
+                    
+                    if (currentGesture !== direction && (!lastGestureTime || now - lastGestureTime > 500)) {
+                        currentGesture = direction;
+                        lastGestureTime = now;
+                        navigateContent(direction);
+                    }
+                }
+                // Detect wave gesture
+                else if (detectWaveGesture(hand)) {
+                    if (currentGesture !== GESTURE_TYPES.WAVE) {
+                        currentGesture = GESTURE_TYPES.WAVE;
+                        togglePlayback();
+                    }
+                }
+                else {
+                    currentGesture = null;
                 }
             }
+
+            // Detect body pose for additional controls
+            if (posePredictions) {
+                const leftWrist = posePredictions.keypoints.find(k => k.part === 'leftWrist');
+                const rightWrist = posePredictions.keypoints.find(k => k.part === 'rightWrist');
+                
+                if (leftWrist && rightWrist) {
+                    const verticalDistance = Math.abs(leftWrist.position.y - rightWrist.position.y);
+                    if (verticalDistance > 100) {
+                        adjustVolume(verticalDistance);
+                    }
+                }
+            }
+        }
+
+        function showMovieDetailsAR() {
+            const movie = movies[Math.floor(Math.random() * movies.length)];
+            document.getElementById('ar-info').innerHTML = `
+                <h3 class="text-xl font-bold mb-2">${movie.title}</h3>
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-sm bg-green-500 px-2 py-1 rounded">${movie.match} Match</span>
+                    <span class="text-sm">${movie.maturityRating}</span>
+                    <span class="text-sm">${movie.duration}</span>
+                </div>
+                <p class="text-sm mb-1">${movie.type} • ${movie.year}</p>
+                <p class="text-sm mb-2">${movie.genres.join(' • ')}</p>
+                <div class="mb-2">
+                    <p class="text-sm font-semibold">Cast:</p>
+                    <p class="text-sm">${movie.cast.join(', ')}</p>
+                </div>
+                <div class="mb-2">
+                    <p class="text-sm font-semibold">Director:</p>
+                    <p class="text-sm">${movie.director}</p>
+                </div>
+                <div class="mb-2">
+                    <p class="text-sm font-semibold">Audio Languages:</p>
+                    <p class="text-sm">${movie.audioLanguages.join(', ')}</p>
+                </div>
+                <div class="mb-2">
+                    <p class="text-sm font-semibold">Similar Titles:</p>
+                    <p class="text-sm">${movie.similarTitles.join(', ')}</p>
+                </div>
+                <p class="text-sm mb-2">${movie.description}</p>
+                <div class="mt-4 flex space-x-2">
+                    <button class="px-4 py-2 bg-netflix-red rounded hover:bg-red-700">Play</button>
+                    <button class="px-4 py-2 bg-netflix-light-gray rounded hover:bg-gray-600">More Info</button>
+                    <button id="close-ar" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700">Close</button>
+                </div>
+            `;
+        }
+
+        function navigateContent(direction) {
+            if (direction === GESTURE_TYPES.SWIPE_LEFT) {
+                // Navigate to previous content
+                console.log('Swipe left - Previous content');
+            } else if (direction === GESTURE_TYPES.SWIPE_RIGHT) {
+                // Navigate to next content
+                console.log('Swipe right - Next content');
+            }
+        }
+
+        function togglePlayback() {
+            console.log('Wave gesture - Toggle playback');
+        }
+
+        function adjustVolume(distance) {
+            console.log('Adjusting volume based on hand distance:', distance);
         }
 
         function toggleAR() {
@@ -378,14 +821,17 @@
             
             if (isARActive) {
                 setupCamera();
-                loadHandpose();
-                detectionInterval = setInterval(detectHands, 100);
+                loadModels();
+                detectionInterval = setInterval(detectGestures, 100);
             } else {
                 clearInterval(detectionInterval);
                 const video = document.getElementById('webcam');
                 if (video.srcObject) {
                     video.srcObject.getTracks().forEach(track => track.stop());
                 }
+                currentGesture = null;
+                gestureStartTime = null;
+                lastGestureTime = null;
             }
         }
 
@@ -405,6 +851,46 @@
                 tab.classList.add('active');
             });
         });
+
+        // Navigation Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const category = link.textContent.trim().toLowerCase();
+                filterContent(category);
+            });
+        });
+
+        // Profile Dropdown
+        document.querySelector('.profile-selector').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Movie Functions
+        function playMovie() {
+            alert('Playing movie...');
+            // Implement movie playback
+        }
+
+        function showMoreInfo() {
+            alert('Showing more info...');
+            // Implement more info display
+        }
+
+        function showMovieDetails(movieId) {
+            const movie = movies.find(m => m.id === movieId);
+            if (movie) {
+                alert(`Showing details for ${movie.title}`);
+                // Implement movie details display
+            }
+        }
+
+        function filterContent(category) {
+            alert(`Filtering content by ${category}`);
+            // Implement content filtering
+        }
 
         // Initialize
         window.addEventListener('load', () => {
