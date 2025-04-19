@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+    <script src="https://unpkg.com/@tensorflow-models/handpose"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Netflix Sans', sans-serif;
+            background-color: #141414;
+            color: white;
+        }
+
+        .netflix-red {
+            color: #E50914;
+        }
+
+        .netflix-black {
+            background-color: #141414;
+        }
+
+        .netflix-dark-gray {
+            background-color: #181818;
+        }
+
+        .netflix-light-gray {
+            background-color: #2F2F2F;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .movie-card {
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .movie-card:hover .movie-info {
+            opacity: 1;
+        }
+
+        .movie-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #ar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            z-index: 1000;
+        }
+
+        #webcam-container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            margin: 0 auto;
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+        }
+
+        #ar-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .category-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .category-tab.active {
+            background-color: #E50914;
+        }
+
+        .movie-row {
+            margin-bottom: 2rem;
+        }
+
+        .movie-row-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 netflix-black">
+        <div class="flex items-center justify-between px-4 py-4">
+            <div class="flex items-center space-x-8">
+                <span class="netflix-red text-4xl font-bold">NETFLIX</span>
+                <div class="hidden md:flex space-x-4">
+                    <a href="#" class="hover:text-gray-300">Home</a>
+                    <a href="#" class="hover:text-gray-300">TV Shows</a>
+                    <a href="#" class="hover:text-gray-300">Movies</a>
+                    <a href="#" class="hover:text-gray-300">New & Popular</a>
+                    <a href="#" class="hover:text-gray-300">My List</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="px-4 py-2 bg-netflix-red rounded">Sign In</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen">
+        <div class="absolute inset-0 hero-gradient">
+            <img src="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Hero Background" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute inset-0 flex flex-col justify-center px-8 md:px-16">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4">Stranger Things</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl">When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.</p>
+            <div class="flex space-x-4">
+                <button class="px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-opacity-80">Play</button>
+                <button class="px-8 py-3 bg-netflix-light-gray rounded-lg font-bold hover:bg-opacity-80">More Info</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        <!-- Category Tabs -->
+        <div class="category-tabs px-4">
+            <div class="category-tab active">All</div>
+            <div class="category-tab">TV Shows</div>
+            <div class="category-tab">Movies</div>
+            <div class="category-tab">New Releases</div>
+            <div class="category-tab">Trending</div>
+        </div>
+
+        <!-- Movie Rows -->
+        <div class="px-4">
+            <!-- Popular on Netflix -->
+            <div class="movie-row">
+                <h2 class="movie-row-title">Popular on Netflix</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Stranger Things</h3>
+                            <p class="text-sm">TV Show • 2016</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Squid Game" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Squid Game</h3>
+                            <p class="text-sm">TV Show • 2021</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" alt="The Witcher" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">The Witcher</h3>
+                            <p class="text-sm">TV Show • 2019</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="The Queen's Gambit" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">The Queen's Gambit</h3>
+                            <p class="text-sm">TV Show • 2020</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Bridgerton" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Bridgerton</h3>
+                            <p class="text-sm">TV Show • 2020</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Money Heist" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Money Heist</h3>
+                            <p class="text-sm">TV Show • 2017</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Now -->
+            <div class="movie-row">
+                <h2 class="movie-row-title">Trending Now</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Money Heist" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Money Heist</h3>
+                            <p class="text-sm">TV Show • 2017</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Stranger Things</h3>
+                            <p class="text-sm">TV Show • 2016</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Squid Game" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Squid Game</h3>
+                            <p class="text-sm">TV Show • 2021</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" alt="The Witcher" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">The Witcher</h3>
+                            <p class="text-sm">TV Show • 2019</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="The Queen's Gambit" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">The Queen's Gambit</h3>
+                            <p class="text-sm">TV Show • 2020</p>
+                        </div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Bridgerton" class="w-full rounded">
+                        <div class="movie-info">
+                            <h3 class="font-bold">Bridgerton</h3>
+                            <p class="text-sm">TV Show • 2020</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AR X-Ray Feature -->
+    <div id="ar-overlay">
+        <div id="webcam-container">
+            <video id="webcam" autoplay playsinline></video>
+            <div id="ar-info">
+                <h3 class="text-xl font-bold mb-2">AR X-Ray</h3>
+                <p>Point your hand at the screen to see movie details</p>
+                <div class="mt-4">
+                    <button id="close-ar" class="px-4 py-2 bg-netflix-red rounded">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for movies
+        const movies = [
+            {
+                title: "Stranger Things",
+                description: "When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.",
+                image: "https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png",
+                year: "2016",
+                type: "TV Show",
+                rating: "TV-14",
+                genres: ["Sci-Fi", "Horror", "Drama"]
+            },
+            {
+                title: "Squid Game",
+                description: "Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside, a tempting prize awaits — with deadly high stakes.",
+                image: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+                year: "2021",
+                type: "TV Show",
+                rating: "TV-MA",
+                genres: ["Thriller", "Drama"]
+            },
+            {
+                title: "The Witcher",
+                description: "Geralt of Rivia, a mutated monster-hunter for hire, journeys toward his destiny in a turbulent world where people often prove more wicked than beasts.",
+                image: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+                year: "2019",
+                type: "TV Show",
+                rating: "TV-MA",
+                genres: ["Fantasy", "Action", "Adventure"]
+            }
+        ];
+
+        // AR X-Ray Feature
+        let handposeModel;
+        let isARActive = false;
+        let detectionInterval;
+
+        async function setupCamera() {
+            const video = document.getElementById('webcam');
+            const stream = await navigator.mediaDevices.getUserMedia({
+                'video': true
+            });
+            video.srcObject = stream;
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    resolve(video);
+                };
+            });
+        }
+
+        async function loadHandpose() {
+            handposeModel = await handpose.load();
+        }
+
+        async function detectHands() {
+            const video = document.getElementById('webcam');
+            const predictions = await handposeModel.estimateHands(video);
+            
+            if (predictions.length > 0) {
+                const hand = predictions[0];
+                const indexFinger = hand.annotations.indexFinger[3];
+                const middleFinger = hand.annotations.middleFinger[3];
+                
+                // Calculate distance between index and middle fingers
+                const distance = Math.sqrt(
+                    Math.pow(indexFinger[0] - middleFinger[0], 2) +
+                    Math.pow(indexFinger[1] - middleFinger[1], 2)
+                );
+
+                // If fingers are close together (pinching gesture)
+                if (distance < 20) {
+                    const movie = movies[Math.floor(Math.random() * movies.length)];
+                    document.getElementById('ar-info').innerHTML = `
+                        <h3 class="text-xl font-bold mb-2">${movie.title}</h3>
+                        <p class="text-sm mb-1">${movie.type} • ${movie.year} • ${movie.rating}</p>
+                        <p class="text-sm mb-2">${movie.genres.join(' • ')}</p>
+                        <p>${movie.description}</p>
+                        <div class="mt-4">
+                            <button id="close-ar" class="px-4 py-2 bg-netflix-red rounded">Close</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function toggleAR() {
+            isARActive = !isARActive;
+            const overlay = document.getElementById('ar-overlay');
+            overlay.style.display = isARActive ? 'block' : 'none';
+            
+            if (isARActive) {
+                setupCamera();
+                loadHandpose();
+                detectionInterval = setInterval(detectHands, 100);
+            } else {
+                clearInterval(detectionInterval);
+                const video = document.getElementById('webcam');
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'x') {
+                toggleAR();
+            }
+        });
+
+        document.getElementById('close-ar').addEventListener('click', toggleAR);
+
+        // Category Tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('Netflix Clone loaded successfully!');
+        });
+    </script>
+</body>
+</html> 
