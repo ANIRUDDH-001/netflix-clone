@@ -9,29 +9,68 @@
     <script src="https://unpkg.com/@tensorflow-models/handpose"></script>
     <script src="https://unpkg.com/@tensorflow-models/posenet"></script>
     <script src="https://unpkg.com/@tensorflow-models/coco-ssd"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700&display=swap');
-        
+        :root {
+            --netflix-red: #E50914;
+            --netflix-black: #141414;
+            --netflix-dark-gray: #181818;
+            --netflix-light-gray: #2F2F2F;
+        }
+
         body {
             font-family: 'Netflix Sans', sans-serif;
-            background-color: #141414;
+            background-color: var(--netflix-black);
             color: white;
         }
 
-        .netflix-red {
-            color: #E50914;
+        .netflix-gradient {
+            background: linear-gradient(180deg, 
+                rgba(0,0,0,0.7) 0%, 
+                rgba(0,0,0,0) 20%, 
+                rgba(0,0,0,0) 80%, 
+                rgba(0,0,0,0.7) 100%);
         }
 
-        .netflix-black {
-            background-color: #141414;
+        .title-card-overlay {
+            background: linear-gradient(77deg, 
+                rgba(0,0,0,0.6) 0%, 
+                rgba(0,0,0,0) 85%);
         }
 
-        .netflix-dark-gray {
-            background-color: #181818;
+        .nav-blur {
+            background: linear-gradient(180deg, 
+                rgba(0,0,0,0.7) 10%, 
+                rgba(0,0,0,0) 100%);
+            backdrop-filter: blur(5px);
         }
 
-        .netflix-light-gray {
-            background-color: #2F2F2F;
+        .billboard-motion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .billboard-motion video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rank-badge {
+            font-size: 1.6em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .top-10-badge {
+            background: linear-gradient(to bottom, #E50914, #B20710);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
         }
 
         .hero-gradient {
@@ -336,211 +375,255 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 netflix-black">
-        <div class="flex items-center justify-between px-4 py-4">
+    <nav class="fixed w-full z-50 transition-all duration-300 nav-blur">
+        <div class="flex items-center justify-between px-12 py-2">
             <div class="flex items-center space-x-8">
-                <span class="netflix-red text-4xl font-bold">NETFLIX</span>
-                <div class="hidden md:flex space-x-4">
-                    <a href="#" class="nav-link hover:text-gray-300">Home</a>
-                    <a href="#" class="nav-link hover:text-gray-300">TV Shows</a>
-                    <a href="#" class="nav-link hover:text-gray-300">Movies</a>
-                    <a href="#" class="nav-link hover:text-gray-300">New & Popular</a>
-                    <a href="#" class="nav-link hover:text-gray-300">My List</a>
+                <svg viewBox="0 0 111 30" class="h-6 w-24 text-netflix-red fill-current">
+                    <path d="M105.06 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 7.969c-1.687-.282-3.344-.376-5.031-.595l6.031-13.75L94.468 0h5.063l3.062 7.874L105.875 0h5.124l-5.938 14.28zM90.47 0h-4.594v27.25c1.5.094 3.062.156 4.594.343V0zm-8.563 26.937c-4.187-.281-8.375-.53-12.656-.625V0h4.687v21.875c2.688.062 5.375.28 7.969.405v4.657zM64.25 10.657v4.687h-6.406V26H53.22V0h13.125v4.687h-8.5v5.97h6.406zm-18.906-5.97V26.25c-1.563 0-3.156 0-4.688.062V4.687h-4.844V0h14.406v4.687h-4.874zM30.75 15.593c-2.062 0-4.5 0-6.25.095v6.968c2.75-.188 5.5-.406 8.281-.5v4.5l-12.968 1.032V0H32.78v4.687H24.5V11c1.813 0 4.594-.094 6.25-.094v4.688zM4.78 12.968v16.375C3.094 29.531 1.593 29.75 0 30V0h4.469l6.093 17.032V0h4.688v28.062c-1.656.282-3.344.376-5.125.625L4.78 12.968z"></path>
+                </svg>
+                <div class="hidden md:flex space-x-4 text-sm">
+                    <a href="#" class="text-white font-semibold">Home</a>
+                    <a href="#" class="text-gray-300 hover:text-white">TV Shows</a>
+                    <a href="#" class="text-gray-300 hover:text-white">Movies</a>
+                    <a href="#" class="text-gray-300 hover:text-white">New & Popular</a>
+                    <a href="#" class="text-gray-300 hover:text-white">My List</a>
+                    <a href="#" class="text-gray-300 hover:text-white">Browse by Languages</a>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="profile-selector">
-                    <img src="https://placekitten.com/40/40" alt="Profile" class="rounded-full w-8 h-8">
-                    <div class="profile-dropdown">
-                        <div class="profile-option">Manage Profiles</div>
-                        <div class="profile-option">Account</div>
-                        <div class="profile-option">Help Center</div>
-                        <div class="profile-option">Sign out of Netflix</div>
+            <div class="flex items-center space-x-6">
+                <button class="text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+                <button class="text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                </button>
+                <div class="profile-selector relative">
+                    <button class="flex items-center space-x-2">
+                        <img src="https://occ-0-2186-299.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHRSk/AAAABY20DrC9-11ewwAs6nfEgb1vrORxRPP9IGmlW1WtKuaLIz8VxCx5NryzDK3_ez064IsBGdXjVUT59G5IRuFdqZlCJCneepU.png?r=229" alt="Profile" class="rounded w-8 h-8">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown absolute right-0 mt-2 w-48 bg-netflix-dark-gray rounded shadow-lg hidden">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Account</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Help Center</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out of Netflix</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative h-screen">
-        <div class="absolute inset-0 hero-gradient">
-            <img src="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Hero Background" class="w-full h-full object-cover">
+    <!-- Billboard/Hero Section -->
+    <div class="relative h-screen">
+        <div class="billboard-motion">
+            <video autoplay muted loop poster="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png">
+                <source src="https://assets.nflxext.com/ffe/siteui/acquisition/ourStory/fuji/desktop/video-tv-0819.m4v" type="video/mp4">
+            </video>
+            <div class="netflix-gradient absolute inset-0"></div>
         </div>
-        <div class="absolute inset-0 flex flex-col justify-center px-8 md:px-16">
-            <h1 class="text-5xl md:text-7xl font-bold mb-4">Stranger Things</h1>
-            <p class="text-xl md:text-2xl mb-8 max-w-2xl">When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.</p>
+        
+        <div class="absolute bottom-32 left-12 w-1/2">
+            <img src="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Avatar: The Last Airbender" class="w-96 mb-6">
+            <div class="flex items-center space-x-4 mb-4">
+                <span class="top-10-badge">#2 in TV Shows Today</span>
+                <span class="text-sm">TV-PG • 2024 • 8 Episodes</span>
+            </div>
+            <p class="text-lg mb-6 text-gray-200 line-clamp-3">When a young boy disappears, his mother, a police chief and his friends must confront terrifying forces in order to get him back.</p>
             <div class="flex space-x-4">
-                <button class="px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-opacity-80" onclick="playMovie()">Play</button>
-                <button class="px-8 py-3 bg-netflix-light-gray rounded-lg font-bold hover:bg-opacity-80" onclick="showMoreInfo()">More Info</button>
+                <button class="flex items-center px-8 py-2 bg-white text-black rounded-md hover:bg-opacity-80 transition">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Play
+                </button>
+                <button class="flex items-center px-8 py-2 bg-gray-500 bg-opacity-70 text-white rounded-md hover:bg-opacity-50 transition">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    More Info
+                </button>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Main Content -->
-    <main class="pt-16">
+    <main class="relative z-10 -mt-32 pb-12">
         <!-- Category Tabs -->
-        <div class="category-tabs px-4">
-            <div class="category-tab active" onclick="filterContent('all')">All</div>
-            <div class="category-tab" onclick="filterContent('tv')">TV Shows</div>
-            <div class="category-tab" onclick="filterContent('movies')">Movies</div>
-            <div class="category-tab" onclick="filterContent('new')">New Releases</div>
-            <div class="category-tab" onclick="filterContent('trending')">Trending</div>
+        <div class="category-tabs px-12 mb-8">
+            <div class="flex space-x-8 text-sm">
+                <button class="category-tab active" onclick="filterContent('all')">
+                    <span class="relative py-1">
+                        Home
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-100"></span>
+                    </span>
+                </button>
+                <button class="category-tab" onclick="filterContent('tv')">
+                    <span class="relative py-1">
+                        TV Shows
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-0 transition-transform"></span>
+                    </span>
+                </button>
+                <button class="category-tab" onclick="filterContent('movies')">
+                    <span class="relative py-1">
+                        Movies
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-0 transition-transform"></span>
+                    </span>
+                </button>
+                <button class="category-tab" onclick="filterContent('new')">
+                    <span class="relative py-1">
+                        New & Popular
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-0 transition-transform"></span>
+                    </span>
+                </button>
+                <button class="category-tab" onclick="filterContent('list')">
+                    <span class="relative py-1">
+                        My List
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-0 transition-transform"></span>
+                    </span>
+                </button>
+            </div>
         </div>
 
-        <!-- Movie Rows -->
-        <div class="px-4">
-            <!-- Continue Watching -->
-            <div class="movie-row">
-                <h2 class="movie-row-title">Continue Watching</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div class="movie-card continue-watching" onclick="showMovieDetails('stranger-things')">
-                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
-                        <div class="continue-watching-info">
-                            <div class="continue-watching-title">Stranger Things</div>
-                            <div class="continue-watching-progress">
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 65%"></div>
+        <!-- Continue Watching -->
+        <section class="movie-section mb-8">
+            <div class="px-12">
+                <h2 class="text-xl font-medium mb-4">Continue Watching for User</h2>
+                <div class="relative">
+                    <div class="flex space-x-2 overflow-x-hidden" id="continue-watching-row">
+                        <div class="movie-tile flex-none w-[16%] relative group">
+                            <div class="aspect-video rounded-md overflow-hidden">
+                                <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" 
+                                     alt="Stranger Things" 
+                                     class="w-full h-full object-cover transform group-hover:scale-110 transition duration-300">
+                            </div>
+                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-600">
+                                <div class="h-full bg-red-600" style="width: 45%"></div>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="absolute bottom-4 left-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="continue-watching-time">33m left</div>
                             </div>
                         </div>
+                        <!-- Add more continue watching tiles -->
                     </div>
-                    <!-- Add more continue watching cards -->
+                    <button class="absolute top-0 bottom-0 left-0 w-12 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button class="absolute top-0 bottom-0 right-0 w-12 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
+        </section>
 
-            <!-- Popular on Netflix -->
-            <div class="movie-row">
-                <h2 class="movie-row-title">Popular on Netflix</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div class="movie-card" onclick="showMovieDetails('stranger-things')">
-                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
-                        <div class="movie-info">
-                            <div class="flex items-center space-x-2">
-                                <span class="match-badge">97% Match</span>
-                                <span class="maturity-rating">TV-14</span>
+        <!-- Popular on Netflix -->
+        <section class="movie-section mb-8">
+            <div class="px-12">
+                <h2 class="text-xl font-medium mb-4">Popular on Netflix</h2>
+                <div class="relative">
+                    <div class="flex space-x-2 overflow-x-hidden" id="popular-row">
+                        <div class="movie-tile flex-none w-[16%] relative group">
+                            <div class="aspect-video rounded-md overflow-hidden">
+                                <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" 
+                                     alt="Squid Game" 
+                                     class="w-full h-full object-cover transform group-hover:scale-110 transition duration-300">
                             </div>
-                            <div class="flex flex-wrap mt-2">
-                                <span class="genre-tag">Sci-Fi</span>
-                                <span class="genre-tag">Horror</span>
-                                <span class="genre-tag">Drama</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="absolute bottom-4 left-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="text-sm">97% Match</span>
+                                        <span class="text-sm ml-2">TV-MA</span>
+                                    </div>
+                                    <div class="mt-1 flex space-x-2">
+                                        <span class="text-xs px-1 border border-gray-400">HD</span>
+                                        <span class="text-xs">Thriller</span>
+                                        <span class="text-xs">Drama</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="movie-actions">
-                                <button class="movie-action-btn" onclick="playMovie(event, 'stranger-things')">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
-                                    </svg>
-                                </button>
-                                <button class="movie-action-btn" onclick="addToMyList(event, 'stranger-things')">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button class="movie-action-btn" onclick="showMoreInfo(event, 'stranger-things')">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
                         </div>
+                        <!-- Add more popular tiles -->
                     </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Squid Game" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Squid Game</h3>
-                            <p class="text-sm">TV Show • 2021</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" alt="The Witcher" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">The Witcher</h3>
-                            <p class="text-sm">TV Show • 2019</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="The Queen's Gambit" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">The Queen's Gambit</h3>
-                            <p class="text-sm">TV Show • 2020</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Bridgerton" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Bridgerton</h3>
-                            <p class="text-sm">TV Show • 2020</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Money Heist" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Money Heist</h3>
-                            <p class="text-sm">TV Show • 2017</p>
-                        </div>
-                    </div>
+                    <button class="absolute top-0 bottom-0 left-0 w-12 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button class="absolute top-0 bottom-0 right-0 w-12 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
+        </section>
 
-            <!-- Trending Now -->
-            <div class="movie-row">
-                <h2 class="movie-row-title">Trending Now</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Money Heist" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Money Heist</h3>
-                            <p class="text-sm">TV Show • 2017</p>
+        <!-- Top 10 TV Shows -->
+        <section class="movie-section mb-8">
+            <div class="px-12">
+                <h2 class="text-xl font-medium mb-4">Top 10 TV Shows in Your Country</h2>
+                <div class="relative">
+                    <div class="flex space-x-2 overflow-x-hidden" id="top-10-row">
+                        <div class="movie-tile flex-none w-[16%] relative group">
+                            <div class="absolute -left-4 bottom-0 text-7xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5)">1</div>
+                            <div class="aspect-video rounded-md overflow-hidden">
+                                <img src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" 
+                                     alt="The Witcher" 
+                                     class="w-full h-full object-cover transform group-hover:scale-110 transition duration-300">
+                            </div>
+                            <!-- Add hover overlay similar to above -->
                         </div>
+                        <!-- Add more top 10 tiles -->
                     </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="Stranger Things" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Stranger Things</h3>
-                            <p class="text-sm">TV Show • 2016</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Squid Game" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Squid Game</h3>
-                            <p class="text-sm">TV Show • 2021</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" alt="The Witcher" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">The Witcher</h3>
-                            <p class="text-sm">TV Show • 2019</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="The Queen's Gambit" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">The Queen's Gambit</h3>
-                            <p class="text-sm">TV Show • 2020</p>
-                        </div>
-                    </div>
-                    <div class="movie-card">
-                        <img src="https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MR.jpg" alt="Bridgerton" class="w-full rounded">
-                        <div class="movie-info">
-                            <h3 class="font-bold">Bridgerton</h3>
-                            <p class="text-sm">TV Show • 2020</p>
-                        </div>
-                    </div>
+                    <!-- Add navigation buttons similar to above -->
                 </div>
             </div>
-
-            <!-- My List -->
-            <div class="movie-row">
-                <h2 class="movie-row-title">My List</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <!-- Add my list cards -->
-                </div>
-            </div>
-        </div>
+        </section>
     </main>
 
     <!-- AR X-Ray Feature -->
@@ -847,8 +930,16 @@
         // Category Tabs
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+                document.querySelectorAll('.category-tab').forEach(t => {
+                    const line = t.querySelector('.absolute');
+                    if (t === tab) {
+                        line.classList.remove('scale-x-0');
+                        line.classList.add('scale-x-100');
+                    } else {
+                        line.classList.remove('scale-x-100');
+                        line.classList.add('scale-x-0');
+                    }
+                });
             });
         });
 
@@ -895,6 +986,45 @@
         // Initialize
         window.addEventListener('load', () => {
             console.log('Netflix Clone loaded successfully!');
+        });
+
+        // Add smooth scrolling for movie rows
+        document.querySelectorAll('.movie-section').forEach(section => {
+            const row = section.querySelector('.flex');
+            const leftBtn = section.querySelector('button:first-of-type');
+            const rightBtn = section.querySelector('button:last-of-type');
+            
+            if (leftBtn && rightBtn) {
+                leftBtn.addEventListener('click', () => {
+                    row.scrollBy({ left: -row.offsetWidth, behavior: 'smooth' });
+                });
+                
+                rightBtn.addEventListener('click', () => {
+                    row.scrollBy({ left: row.offsetWidth, behavior: 'smooth' });
+                });
+            }
+        });
+
+        // Show/hide profile dropdown
+        const profileSelector = document.querySelector('.profile-selector');
+        const profileDropdown = document.querySelector('.profile-dropdown');
+
+        profileSelector.addEventListener('mouseenter', () => {
+            profileDropdown.classList.remove('hidden');
+        });
+
+        profileSelector.addEventListener('mouseleave', () => {
+            profileDropdown.classList.add('hidden');
+        });
+
+        // Add scroll listener for navbar background
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                nav.classList.add('bg-netflix-black');
+            } else {
+                nav.classList.remove('bg-netflix-black');
+            }
         });
     </script>
 </body>
